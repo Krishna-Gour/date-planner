@@ -896,7 +896,7 @@ function buildTime() {
   let allowed = allTimes;
   
   if (state.planType === 'Full Day') {
-    allowed = ['Morning (9–12)'];
+    allowed = ['Morning (9–12)', 'Afternoon (12–4)'];
   } else if (state.planType === 'Evening Only') {
     allowed = ['Evening (4–8)', 'Night (8+)'];
   }
