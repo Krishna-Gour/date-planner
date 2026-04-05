@@ -1,168 +1,1097 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Hinge Date Plan ❤️</title>
-    <meta name="description" content="A cute little date planner, just for us.">
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hinge Date Plan 🌸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════════ */
+:root {
+  --rose:       #e8a0bf;
+  --deep-rose:  #c9607a;
+  --gold:       #d4a853;
+  --cream:      #fff8f4;
+  --dark:       #2a1a20;
+  --muted:      rgba(255,255,255,0.68);
+  --glass:      rgba(255,255,255,0.13);
+  --glass-b:    rgba(255,255,255,0.28);
+  --radius:     20px;
+  --mood-h:     52px;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  color: #fff;
+  background: linear-gradient(150deg, #1a0a10 0%, #3a1025 40%, #1e0d2e 100%);
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════════
+   MOOD BAR — fixed top
+═══════════════════════════════════════════════════ */
+#mood-bar {
+  position: fixed; top:0; left:0; right:0;
+  height: var(--mood-h);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+#mood-bar::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, #c9607a, #e8a0bf, #d4a853, #e8a0bf, #c9607a);
+  background-size: 300%;
+  animation: moodSlide 4s linear infinite;
+  opacity: 0.92;
+}
+@keyframes moodSlide {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+#mood-text {
+  position: relative; z-index:1;
+  font-family:'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight:500;
+  letter-spacing: 0.05em;
+  color: #fff;
+  transition: opacity 0.6s;
+}
+
+/* ═══════════════════════════════════════════════════
+   FLOATING PARTICLES
+═══════════════════════════════════════════════════ */
+#particles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.particle {
+  position:absolute; bottom:-8%;
+  font-size: 1.1rem; opacity:0;
+  animation: floatUp linear infinite;
+  user-select:none;
+}
+@keyframes floatUp {
+  0%   { opacity:0; transform: translateY(0) rotate(-10deg); }
+  8%   { opacity:0.45; }
+  92%  { opacity:0.45; }
+  100% { opacity:0; transform: translateY(-110vh) rotate(15deg); }
+}
+
+/* ═══════════════════════════════════════════════════
+   APP WRAP
+═══════════════════════════════════════════════════ */
+#app {
+  position: relative; z-index:1;
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(var(--mood-h) + 1rem) 1rem 5rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   CARD
+═══════════════════════════════════════════════════ */
+.card {
+  width:100%; max-width:480px;
+  background: var(--glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid var(--glass-b);
+  border-radius: 28px;
+  padding: 2rem 1.5rem 2rem;
+  box-shadow: 0 32px 72px rgba(0,0,0,0.4);
+}
+
+/* ═══════════════════════════════════════════════════
+   PROGRESS DOTS
+═══════════════════════════════════════════════════ */
+.dots {
+  display:flex; justify-content:center; gap:6px;
+  margin-bottom: 1.4rem;
+}
+.dot {
+  height: 6px; border-radius:99px;
+  background: rgba(255,255,255,0.25);
+  transition: width 0.4s cubic-bezier(0.34,1.56,0.64,1), background 0.3s;
+  width: 6px;
+}
+.dot.active { width:24px; background:#e8a0bf; }
+.dot.done   { background: rgba(232,160,191,0.5); }
+
+/* ═══════════════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════════════ */
+.screen { display:none; animation: fadeSlideIn 0.5s cubic-bezier(0.4,0,0.2,1) both; }
+.screen.active { display:block; }
+@keyframes fadeSlideIn {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════════════════ */
+.hero {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(1.9rem, 7vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #fff 40%, #e8a0bf);
+  background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.screen-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.1rem, 4.5vw, 1.45rem);
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  line-height:1.3;
+}
+.flirty {
+  font-size:0.88rem; font-style:italic;
+  color: var(--muted);
+  margin-bottom: 1.3rem;
+  line-height:1.5;
+  min-height: 1.4em;
+}
+.note {
+  font-size:0.78rem; color:var(--muted);
+  margin-bottom:0.9rem;
+  letter-spacing:0.02em;
+}
+
+/* ═══════════════════════════════════════════════════
+   OPTION GRIDS & CARDS
+═══════════════════════════════════════════════════ */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.2rem; }
+.grid-1 { display:grid; grid-template-columns:1fr; gap:0.6rem; margin-bottom:1rem; }
+
+.opt {
+  cursor:pointer; position:relative;
+  border-radius:var(--radius);
+  border:1.5px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.07);
+  padding: 1rem 0.8rem;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:0.3rem; text-align:center;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  user-select:none;
+  min-height:70px;
+}
+.opt:hover { transform:translateY(-3px) scale(1.01); }
+.opt.row { flex-direction:row; justify-content:flex-start; text-align:left; gap:0.7rem; padding:0.8rem 1rem; min-height:52px; }
+.opt .icon { font-size:1.5rem; }
+.opt.row .icon { font-size:1.2rem; min-width:1.4rem; }
+.opt .label { font-size:0.88rem; font-weight:600; }
+.opt .sub { font-size:0.7rem; color:var(--muted); }
+
+/* Selected state */
+.opt.selected {
+  background: rgba(201,96,122,0.28);
+  border-color: var(--rose);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 6px 20px rgba(201,96,122,0.25);
+}
+.opt .check {
+  position:absolute; top:8px; right:8px;
+  width:18px; height:18px; border-radius:50%;
+  background: var(--deep-rose);
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.65rem; font-weight:700;
+  transform:scale(0);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.opt.selected .check { transform:scale(1); }
+
+/* Day cards on welcome */
+.day-card {
+  cursor:pointer;
+  border-radius:24px;
+  border:1.5px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.08);
+  padding:1.8rem 1rem;
+  text-align:center;
+  transition: background 0.2s, border-color 0.25s, transform 0.22s, box-shadow 0.22s;
+  user-select:none;
+}
+.day-card:hover { transform:translateY(-4px); }
+.day-card.selected {
+  background: rgba(201,96,122,0.3);
+  border-color: var(--rose);
+  box-shadow: 0 8px 28px rgba(201,96,122,0.3);
+}
+.day-card .day-icon { font-size:2.4rem; margin-bottom:0.4rem; display:block; }
+.day-card .day-name {
+  font-family:'Playfair Display', serif;
+  font-size:1.3rem; font-weight:600;
+}
+
+/* ═══════════════════════════════════════════════════
+   LOCALITY PILLS
+═══════════════════════════════════════════════════ */
+.pills { display:flex; flex-wrap:wrap; gap:0.55rem; margin-bottom:1rem; }
+.pill {
+  padding:0.5rem 1rem;
+  border-radius:60px;
+  border:1.5px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.07);
+  font-size:0.82rem; font-weight:500;
+  cursor:pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  user-select:none;
+}
+.pill:hover { transform:scale(1.04); }
+.pill.selected {
+  background: rgba(201,96,122,0.3);
+  border-color: var(--rose);
+}
+
+/* ═══════════════════════════════════════════════════
+   VIBE SINGLE-SELECT
+═══════════════════════════════════════════════════ */
+.time-pills { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; }
+
+/* ═══════════════════════════════════════════════════
+   TEXTAREA
+═══════════════════════════════════════════════════ */
+textarea {
+  width:100%;
+  background: rgba(255,255,255,0.07);
+  border:1.5px solid rgba(255,255,255,0.18);
+  border-radius:14px;
+  padding:0.8rem 1rem;
+  color:#fff;
+  font-family:'DM Sans', sans-serif;
+  font-size:0.9rem;
+  resize:none;
+  outline:none;
+  margin-bottom:1.2rem;
+  transition: border-color 0.2s;
+  min-height:80px;
+}
+textarea::placeholder { color:rgba(255,255,255,0.38); }
+textarea:focus { border-color: var(--rose); }
+
+.text-input {
+  width:100%;
+  background: transparent;
+  border:none;
+  border-bottom:1.5px solid rgba(255,255,255,0.3);
+  padding:0.6rem 0;
+  color:#fff;
+  font-family:'DM Sans', sans-serif;
+  font-size:0.95rem;
+  outline:none;
+  margin-bottom:1rem;
+  text-align:center;
+  transition: border-color 0.2s;
+}
+.text-input::placeholder { color:rgba(255,255,255,0.4); }
+.text-input:focus { border-color: var(--rose); }
+
+/* ═══════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════ */
+.btn-primary {
+  width:100%;
+  padding:1rem;
+  border-radius:60px;
+  border:none;
+  background: linear-gradient(135deg, var(--deep-rose), var(--rose));
+  color:#fff;
+  font-family:'DM Sans', sans-serif;
+  font-size:1rem; font-weight:600;
+  cursor:pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+  box-shadow: 0 6px 24px rgba(201,96,122,0.4);
+  letter-spacing:0.02em;
+}
+.btn-primary:active { transform:scale(0.95); }
+.btn-primary:disabled {
+  opacity:0.4; cursor:not-allowed;
+  box-shadow:none;
+}
+
+.nav-row {
+  display:flex; justify-content:space-between;
+  align-items:center; gap:0.8rem;
+  margin-top:1rem;
+}
+.btn-back {
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:60px; padding:0.7rem 1.3rem;
+  color:#fff; font-family:'DM Sans', sans-serif;
+  font-size:0.88rem; font-weight:500;
+  cursor:pointer; transition:background 0.18s;
+  flex-shrink:0;
+}
+.btn-back:active { background:rgba(255,255,255,0.2); }
+.btn-next {
+  flex:1;
+  padding:0.85rem 1rem;
+  border-radius:60px; border:none;
+  background: linear-gradient(135deg, var(--deep-rose), var(--rose));
+  color:#fff; font-family:'DM Sans', sans-serif;
+  font-size:0.95rem; font-weight:600;
+  cursor:pointer;
+  transition: transform 0.15s, opacity 0.2s;
+  box-shadow: 0 4px 16px rgba(201,96,122,0.35);
+}
+.btn-next:active { transform:scale(0.95); }
+.btn-next:disabled { opacity:0.38; cursor:not-allowed; box-shadow:none; }
+
+/* ═══════════════════════════════════════════════════
+   LOADING SCREEN
+═══════════════════════════════════════════════════ */
+.spinner {
+  width:48px; height:48px;
+  border:3px solid rgba(255,255,255,0.15);
+  border-top-color: var(--rose);
+  border-radius:50%;
+  animation: spin 0.9s linear infinite;
+  margin:2rem auto 1rem;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════
+   DONE SCREEN
+═══════════════════════════════════════════════════ */
+.summary-box {
+  background: rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:16px; padding:1rem 1.2rem;
+  margin-bottom:1.2rem;
+  text-align:left;
+}
+.summary-row { display:flex; gap:0.5rem; margin-bottom:0.4rem; font-size:0.85rem; }
+.summary-row:last-child { margin-bottom:0; }
+.summary-label { color:var(--muted); min-width:70px; flex-shrink:0; }
+.summary-val { font-weight:500; }
+
+/* ═══════════════════════════════════════════════════
+   MUSIC TOGGLE — bottom-right circle
+═══════════════════════════════════════════════════ */
+#music-btn {
+  position:fixed; bottom:1.4rem; right:1.2rem;
+  width:48px; height:48px; border-radius:50%;
+  background:#fff;
+  border:2px solid var(--deep-rose);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.3rem;
+  cursor:pointer; z-index:300;
+  transition: transform 0.2s;
+}
+#music-btn:active { transform:scale(0.9); }
+#music-btn.playing { animation: pulseMusc 2s infinite; }
+@keyframes pulseMusc {
+  0%   { box-shadow: 0 0 0 0 rgba(201,96,122,0.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(201,96,122,0); }
+  100% { box-shadow: 0 0 0 0 rgba(201,96,122,0); }
+}
+
+/* ═══════════════════════════════════════════════════
+   BURST PARTICLES (on tap)
+═══════════════════════════════════════════════════ */
+.burst-particle {
+  position:fixed; pointer-events:none; z-index:400;
+  font-size:1rem;
+  animation: burst 0.7s ease-out forwards;
+}
+@keyframes burst {
+  0%   { transform:translate(0,0) scale(1); opacity:1; }
+  100% { transform:translate(var(--tx), var(--ty)) scale(0.3); opacity:0; }
+}
+
+/* ═══════════════════════════════════════════════════
+   WELCOME HEARTBEAT
+═══════════════════════════════════════════════════ */
+.heart-pulse {
+  display:inline-block;
+  animation: heartbeat 1.4s ease-in-out infinite;
+}
+@keyframes heartbeat {
+  0%,100% { transform:scale(1); }
+  14%     { transform:scale(1.18); }
+  28%     { transform:scale(1); }
+  42%     { transform:scale(1.12); }
+  56%     { transform:scale(1); }
+}
+
+/* Separator */
+.or { color:var(--muted); font-size:0.75rem; text-align:center; margin:0.5rem 0; }
+</style>
 </head>
 <body>
 
-    <!-- Background image overlay -->
-    <div class="bg-overlay"></div>
+<!-- ── MOOD BAR ────────────────────────────────── -->
+<div id="mood-bar">
+  <span id="mood-text">Play Out Mood 🌸</span>
+</div>
 
-    <!-- Floating hearts -->
-    <div id="hearts-container" aria-hidden="true"></div>
+<!-- ── FLOATING PARTICLES ─────────────────────── -->
+<div id="particles"></div>
 
-    <!-- Confetti canvas (success screen) -->
-    <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+<!-- ── MUSIC ──────────────────────────────────── -->
+<audio id="bgMusic" loop preload="auto">
+  <source src="perfect.mp3" type="audio/mpeg">
+</audio>
+<button id="music-btn" aria-label="Toggle music">🎵</button>
 
-    <!-- ── Music bar — fixed top ───────────────────────── -->
-    <div class="music-bar">
-        <button id="music-toggle" class="music-btn" aria-label="Play background music">
-            <span class="music-icon">🎵</span>
-            <span class="music-label">Play Out Mood</span>
-        </button>
-        <!-- Perfect by One Direction — place perfect.mp3 in root folder -->
-        <audio id="bg-audio" loop preload="none">
-            <source src="perfect.mp3" type="audio/mpeg">
-        </audio>
+<!-- ══════════════════════════════════════════════
+     APP
+══════════════════════════════════════════════ -->
+<div id="app">
+<div class="card" id="main-card">
+
+  <!-- Progress dots -->
+  <div class="dots" id="dots"></div>
+
+  <!-- ── SCREEN 0: Welcome ────────────────────── -->
+  <div class="screen active" id="s0">
+    <p style="text-align:center;margin-bottom:0.6rem;">
+      <span class="heart-pulse" style="font-size:2.2rem;">🌹</span>
+    </p>
+    <h1 class="hero" style="text-align:center;">Wanna take a break?</h1>
+    <p class="flirty" style="text-align:center;margin-bottom:1.6rem;">Let's plan something worth remembering</p>
+    <div class="grid-2" id="day-cards">
+      <div class="day-card" data-day="Saturday" onclick="pickDay(this)">
+        <span class="day-icon">🌤️</span>
+        <span class="day-name">Saturday</span>
+      </div>
+      <div class="day-card" data-day="Sunday" onclick="pickDay(this)">
+        <span class="day-icon">🌸</span>
+        <span class="day-name">Sunday</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 1: Day Type ───────────────────── -->
+  <div class="screen" id="s1">
+    <h2 class="screen-title">How would you like to spend it?</h2>
+    <p class="flirty" id="flirty-1"></p>
+    <div class="grid-1">
+      <div class="opt" data-type="Full Day" onclick="pickType(this)">
+        <div class="check">✓</div>
+        <span class="icon">🌞</span>
+        <span class="label">Full Day Out</span>
+        <span class="sub">A sunrise-to-stars kind of plan</span>
+      </div>
+      <div class="opt" data-type="Meetup" onclick="pickType(this)">
+        <div class="check">✓</div>
+        <span class="icon">☕</span>
+        <span class="label">Meetup / Hangout</span>
+        <span class="sub">Quick, breezy, and perfectly you</span>
+      </div>
+      <div class="opt" data-type="Evening Only" onclick="pickType(this)">
+        <div class="check">✓</div>
+        <span class="icon">🌆</span>
+        <span class="label">Evening Only</span>
+        <span class="sub">Golden hour to city lights</span>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(0)">← Back</button>
+      <button class="btn-next" id="s1-next" onclick="goTo(2)" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 2A: Full Day / Evening Activities -->
+  <div class="screen" id="s2a">
+    <h2 class="screen-title">What would you like the day to feel like?</h2>
+    <p class="flirty" id="flirty-2a">Pick as many as your heart wants ✨</p>
+    <p class="note">Pick as many as your heart wants ✨</p>
+    <div id="activities-fullday" class="grid-1"></div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(1)">← Back</button>
+      <button class="btn-next" id="s2a-next" onclick="goTo(3)" disabled>Sounds like a plan →</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 2B: Meetup Activities ─────────── -->
+  <div class="screen" id="s2b">
+    <h2 class="screen-title">What sounds like a good time?</h2>
+    <p class="flirty" id="flirty-2b">Pick as many as your heart wants ✨</p>
+    <p class="note">Pick as many as your heart wants ✨</p>
+    <div id="activities-meetup" class="grid-1"></div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(1)">← Back</button>
+      <button class="btn-next" id="s2b-next" onclick="goTo(3)" disabled>Sounds like a plan →</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 3: Locality ───────────────────── -->
+  <div class="screen" id="s3">
+    <h2 class="screen-title">Which part of Pune feels right?</h2>
+    <p class="flirty" id="flirty-3">Pune has hidden gems everywhere. You just need to know where to look.</p>
+    <div class="pills" id="locality-pills"></div>
+    <p class="or">— Anything else? (optional) —</p>
+    <input class="text-input" id="locality-text" type="text" placeholder="Type a neighbourhood...">
+    <div class="nav-row">
+      <button class="btn-back" id="s3-back" onclick="backFromLocality()">← Back</button>
+      <button class="btn-next" onclick="goTo(4)">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 4: Vibe & Details ─────────────── -->
+  <div class="screen" id="s4">
+    <h2 class="screen-title">One last thing...</h2>
+    <p class="flirty" id="flirty-4">Each thing you picked tells me something about you. Noted. 😏</p>
+
+    <p class="note" style="margin-bottom:0.5rem;">What's the vibe?</p>
+    <div class="grid-2" id="vibe-cards"></div>
+
+    <p class="note" style="margin-bottom:0.5rem;">Time preference?</p>
+    <div class="time-pills" id="time-pills">
+      <div class="pill" data-time="Morning (9–12)" onclick="pickTime(this)">Morning (9–12)</div>
+      <div class="pill" data-time="Afternoon (12–4)" onclick="pickTime(this)">Afternoon (12–4)</div>
+      <div class="pill" data-time="Evening (4–8)" onclick="pickTime(this)">Evening (4–8)</div>
+      <div class="pill" data-time="Night (8+)" onclick="pickTime(this)">Night (8+)</div>
     </div>
 
-    <!-- ── Main card ───────────────────────────────────── -->
-    <main class="app-wrap">
-        <div class="glass-card" id="main-card">
+    <textarea id="special-note" rows="3" placeholder="Any special note? e.g. she loves desserts, no spicy food..."></textarea>
 
-            <!-- Progress bar -->
-            <div class="progress-wrap" id="progress-wrap">
-                <div class="progress-bar" id="progress-bar"></div>
-            </div>
-            <p class="progress-label" id="progress-label"></p>
-
-            <!-- ── STEP 1: Welcome + Mood ────────────────── -->
-            <div class="step active" id="step-1">
-                <div class="step-emoji">🌹</div>
-                <h1 class="hero-title">Wanna take a break?</h1>
-                <p class="flirty-line">I know just the way to make your weekend something special.</p>
-                <div class="mood-row" id="mood-row">
-                    <span class="mood-label">What's your energy?</span>
-                    <div class="mood-chips">
-                        <button class="mood-chip" data-mood="Chill" onclick="pickMood(this)">😌 Chill</button>
-                        <button class="mood-chip" data-mood="Adventurous" onclick="pickMood(this)">🔥 Adventurous</button>
-                        <button class="mood-chip" data-mood="Romantic" onclick="pickMood(this)">🌹 Romantic</button>
-                    </div>
-                </div>
-                <button class="btn-primary" id="step1-yes" onclick="goTo(2)">Yes, please! ✨</button>
-            </div>
-
-            <!-- ── STEP 2: Day ─────────────────────────── -->
-            <div class="step" id="step-2">
-                <div class="step-emoji">🗓️</div>
-                <h2 class="step-title">Which day would you prefer?</h2>
-                <p class="flirty-line" id="flirty-2">Tell me when — and I'll make it worth your while.</p>
-                <div class="option-grid two-col">
-                    <label class="option-card">
-                        <input type="radio" name="day" value="Saturday" required>
-                        <div class="card-inner">
-                            <span class="card-icon">🌤️</span>
-                            <span class="card-label">Saturday</span>
-                        </div>
-                    </label>
-                    <label class="option-card">
-                        <input type="radio" name="day" value="Sunday">
-                        <div class="card-inner">
-                            <span class="card-icon">🌸</span>
-                            <span class="card-label">Sunday</span>
-                        </div>
-                    </label>
-                </div>
-                <div class="nav-row">
-                    <button class="btn-back" onclick="goTo(1)">← Back</button>
-                    <button class="btn-primary" onclick="goTo(3)">Next →</button>
-                </div>
-            </div>
-
-            <!-- ── STEP 3: Plan Type ─────────────────── -->
-            <div class="step" id="step-3">
-                <div class="step-emoji">✨</div>
-                <h2 class="step-title">How much time do you have?</h2>
-                <p class="flirty-line" id="flirty-3">More time with you? Yes please.</p>
-                <div class="option-grid two-col">
-                    <label class="option-card">
-                        <input type="radio" name="plan_type" value="Full Day" required onchange="onPlanType('Full Day')">
-                        <div class="card-inner">
-                            <span class="card-icon">🌞</span>
-                            <span class="card-label">Full Day</span>
-                            <span class="card-sub">Let's go all out</span>
-                        </div>
-                    </label>
-                    <label class="option-card">
-                        <input type="radio" name="plan_type" value="Meetup" onchange="onPlanType('Meetup')">
-                        <div class="card-inner">
-                            <span class="card-icon">☕</span>
-                            <span class="card-label">Quick Meetup</span>
-                            <span class="card-sub">Keep it cozy</span>
-                        </div>
-                    </label>
-                </div>
-                <div class="nav-row">
-                    <button class="btn-back" onclick="goTo(2)">← Back</button>
-                    <button class="btn-primary" onclick="goTo(4)">Next →</button>
-                </div>
-            </div>
-
-            <!-- ── STEP 4: Itinerary ─────────────────── -->
-            <div class="step" id="step-4">
-                <div class="step-emoji">🎯</div>
-                <h2 class="step-title" id="itinerary-title">What sounds fun to you?</h2>
-                <p class="flirty-line" id="flirty-4">Pick as many as you like — your wish is my command.</p>
-                <div class="option-grid one-col scrollable" id="itinerary-options">
-                    <!-- Dynamically filled -->
-                </div>
-                <button class="btn-surprise" id="surprise-btn" onclick="surpriseMe()">🎲 Surprise Me!</button>
-                <div class="nav-row">
-                    <button class="btn-back" onclick="goTo(3)">← Back</button>
-                    <button class="btn-primary" onclick="goTo(5)">Next →</button>
-                </div>
-            </div>
-
-            <!-- ── STEP 5: Locality ─────────────────── -->
-            <div class="step" id="step-5">
-                <div class="step-emoji">📍</div>
-                <h2 class="step-title">Which part of Pune works for you?</h2>
-                <p class="flirty-line" id="flirty-5">Last one! Just tell me where — I'll handle everything else.</p>
-                <div class="locality-grid" id="locality-options">
-                    <!-- Dynamically filled -->
-                </div>
-                <p class="or-text">— or type your own —</p>
-                <div class="input-wrap">
-                    <input type="text" id="locality-input" name="locality" placeholder="e.g. Koregaon Park, Camp..." autocomplete="off">
-                    <div class="input-line"></div>
-                </div>
-                <div class="nav-row">
-                    <button class="btn-back" onclick="goTo(4)">← Back</button>
-                    <button class="btn-primary" id="submit-btn" onclick="submitPlan()">Finalize! ❤️</button>
-                </div>
-            </div>
-
-        </div><!-- .glass-card -->
-    </main>
-
-    <!-- ── SUCCESS SCREEN ─────────────────────────────── -->
-    <div id="success-screen" class="success-overlay hidden">
-        <div class="glass-card success-card">
-            <div class="step-emoji">💌</div>
-            <h2 class="hero-title">Done!</h2>
-            <p class="flirty-line">I've got an idea of your vibe —<br>I'll come up with a plan soon!</p>
-            <p class="success-sub">See you soon ❤️</p>
-            <button class="btn-primary" onclick="location.reload()">Start Over</button>
-        </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(3)">← Back</button>
+      <button class="btn-next" id="s4-next" onclick="submitPlan()">Send it over →</button>
     </div>
+  </div>
 
-    <script src="script.js"></script>
+  <!-- ── SCREEN 5: Loading ─────────────────────── -->
+  <div class="screen" id="s5">
+    <div class="spinner"></div>
+    <p style="text-align:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;">
+      Wrapping it up in ribbons...
+    </p>
+  </div>
+
+  <!-- ── SCREEN 6: Done ───────────────────────── -->
+  <div class="screen" id="s6">
+    <p style="text-align:center;font-size:2.5rem;margin-bottom:0.8rem;">💌</p>
+    <h2 class="hero" style="text-align:center;font-size:clamp(1.4rem,5vw,2rem);margin-bottom:0.6rem;">
+      I've an idea of your vibe,<br>I'll come up with a plan soon!
+    </h2>
+    <p class="flirty" style="text-align:center;margin-bottom:1.2rem;">
+      Something wonderful is being planned, just for you. ✨
+    </p>
+    <div class="summary-box" id="done-summary"></div>
+    <button class="btn-primary" onclick="location.reload()">Start Over</button>
+  </div>
+
+</div><!-- .card -->
+</div><!-- #app -->
+
+<script>
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+const state = {
+  day: null,
+  planType: null,
+  activities: [],
+  localities: [],
+  vibe: null,
+  time: null,
+  note: '',
+};
+
+// Total screens for progress: 0-6 (but 5 is loading, hidden from dots)
+const TOTAL_DOTS = 6; // screens 0-4 + done
+let currentScreen = 0;
+
+/* ═══════════════════════════════════════════════════
+   SCREEN NAMES FOR TRACKING
+═══════════════════════════════════════════════════ */
+const SCREEN_IDS = ['s0','s1','s2a','s2b','s3','s4','s5','s6'];
+// Dot-mapped screens (s2a and s2b share same dot index 2)
+const SCREEN_DOT_MAP = { s0:0, s1:1, s2a:2, s2b:2, s3:3, s4:4, s5:4, s6:5 };
+
+/* ═══════════════════════════════════════════════════
+   INIT DOTS
+═══════════════════════════════════════════════════ */
+function initDots() {
+  const c = document.getElementById('dots');
+  c.innerHTML = '';
+  for(let i=0;i<TOTAL_DOTS;i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' active':'');
+    d.id = `dot-${i}`;
+    c.appendChild(d);
+  }
+}
+
+function updateDots(screenId) {
+  const active = SCREEN_DOT_MAP[screenId] ?? 0;
+  for(let i=0;i<TOTAL_DOTS;i++) {
+    const d = document.getElementById(`dot-${i}`);
+    if(!d) continue;
+    d.className = 'dot' + (i===active?' active':(i<active?' done':''));
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   SHOW SCREEN
+═══════════════════════════════════════════════════ */
+function show(id) {
+  SCREEN_IDS.forEach(s => {
+    const el = document.getElementById(s);
+    if(el) el.classList.remove('active');
+  });
+  const next = document.getElementById(id);
+  if(!next) return;
+  next.classList.remove('active');
+  void next.offsetWidth;
+  next.classList.add('active');
+  updateDots(id);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ═══════════════════════════════════════════════════
+   FLIRTY LINES — 3 variants, random
+═══════════════════════════════════════════════════ */
+const FLIRTY = {
+  sat: [
+    "Saturday energy? That means the day is yours to paint. Bold choice.",
+    "A Saturday date? You just made the whole week worth it.",
+    "Saturdays are for the ones worth staying up for. Let's make this count.",
+  ],
+  sun: [
+    "Sundays are made for the things you actually want to do. Love that for you.",
+    "A Sunday that's actually fun? This is rare — and you deserve it.",
+    "Sunday plans with the right person hit different. Let's make this one count.",
+  ],
+  fullday: [
+    "Oh a full day? Someone's serious about having the time of their life.",
+    "Full day it is. I love that ambition. Let's fill every hour with something good.",
+    "A full day means we're not rushing anything. I like the way you think.",
+  ],
+  meetup: [
+    "Short but sweet. Sometimes the best moments are the ones that just happen.",
+    "A meetup with the right energy can change everything. Let's set it right.",
+    "Casual but curated — this is going to be good.",
+  ],
+  evening: [
+    "Golden hour plans? You've got taste.",
+    "Evenings have a magic of their own. Let's make this one unforgettable.",
+    "The best conversations happen as the sun goes down. Can't wait.",
+  ],
+  activities: [
+    "Each thing you picked tells me something about you. Noted. 😏",
+    "I see your personality in every pick. This is going to be something special.",
+    "Great taste. Seriously. Let's talk locations.",
+  ],
+  locality: [
+    "Pune has hidden gems everywhere. You just need to know where to look.",
+    "Every neighbourhood has a vibe. You just helped me find yours.",
+    "Narrowing it down makes it real. We're getting somewhere.",
+  ],
+  vibe: [
+    "One last thing and we're done. You've been amazing at this.",
+    "Almost there. The best plans are the ones that feel thought through.",
+    "Last screen. You're doing great — and so is this plan.",
+  ],
+};
+function pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ═══════════════════════════════════════════════════
+   WELCOME — PICK DAY
+═══════════════════════════════════════════════════ */
+function pickDay(el) {
+  document.querySelectorAll('.day-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.day = el.dataset.day;
+  burst(el);
+
+  // Set flirty line for screen 1
+  const flirtyKey = state.day === 'Saturday' ? 'sat' : 'sun';
+  document.getElementById('flirty-1').textContent = pick(FLIRTY[flirtyKey]);
+
+  setTimeout(() => show('s1'), 350);
+}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 1 — PICK TYPE
+═══════════════════════════════════════════════════ */
+function pickType(el) {
+  document.querySelectorAll('#s1 .opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  state.planType = el.dataset.type;
+  state.activities = [];
+  burst(el);
+
+  const btn = document.getElementById('s1-next');
+  if(btn) btn.disabled = false;
+}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 2 — ACTIVITIES
+═══════════════════════════════════════════════════ */
+const FULL_DAY_ACTS = [
+  {icon:'🎳',label:'Bowling'},
+  {icon:'☕',label:'Coffee'},
+  {icon:'🎬',label:'Movie Screening'},
+  {icon:'🌆',label:'Rooftop Dinner'},
+  {icon:'🎨',label:'Art Cafe / Studio'},
+  {icon:'🎯',label:'Laser Tag'},
+  {icon:'🍰',label:'Dessert Hopping'},
+  {icon:'📚',label:'Book Store Wander'},
+  {icon:'🌅',label:'Sunset Viewpoint (Sinhagad / Vetal Tekdi)'},
+  {icon:'🎲',label:'Board Game Cafe'},
+  {icon:'🚗',label:'City Drive'},
+  {icon:'💆',label:'Spa / Salon Together'},
+  {icon:'📸',label:'Photography Walk'},
+  {icon:'🔐',label:'Escape Room'},
+];
+const MEETUP_ACTS = [
+  {icon:'🎨',label:'Workshop / Class (paint, pottery, cooking)'},
+  {icon:'☕',label:'Coffee Date'},
+  {icon:'🥐',label:'Brunch'},
+  {icon:'🌳',label:'Evening Stroll (Aga Khan garden, Okayama park)'},
+  {icon:'🍩',label:'Dessert Cafe'},
+  {icon:'📖',label:'Bookstore Browse'},
+  {icon:'🌅',label:'Sunset Watch (Vetal Tekdi or any rooftop)'},
+  {icon:'🎲',label:'Board Game Cafe'},
+];
+
+function buildActivities() {
+  ['fullday','meetup'].forEach(type => {
+    const items = type==='fullday' ? FULL_DAY_ACTS : MEETUP_ACTS;
+    const container = document.getElementById(`activities-${type}`);
+    container.innerHTML = '';
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'opt row';
+      div.dataset.act = item.label;
+      div.innerHTML = `<div class="check">✓</div><span class="icon">${item.icon}</span><span class="label">${item.label}</span>`;
+      div.addEventListener('click', () => toggleActivity(div, type));
+      container.appendChild(div);
+    });
+  });
+}
+
+function toggleActivity(el, type) {
+  el.classList.toggle('selected');
+  burst(el);
+  const screenId = type==='fullday' ? 's2a' : 's2b';
+  const nextId   = type==='fullday' ? 's2a-next' : 's2b-next';
+  const checked  = document.querySelectorAll(`#activities-${type} .opt.selected`);
+  const btn = document.getElementById(nextId);
+  if(btn) btn.disabled = checked.length === 0;
+}
+
+function gatherActivities() {
+  const type = state.planType;
+  const domId = type === 'Meetup' ? 'activities-meetup' : 'activities-fullday';
+  state.activities = Array.from(document.querySelectorAll(`#${domId} .opt.selected`))
+                          .map(o => o.dataset.act);
+  document.getElementById('flirty-3').textContent = pick(FLIRTY.activities);
+}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 3 — LOCALITY
+═══════════════════════════════════════════════════ */
+const LOCALITIES = [
+  'Koregaon Park','Kalyani Nagar','Baner','Viman Nagar',
+  'Aundh','Wakad','Hinjewadi','Camp / MG Road',
+  'Shivajinagar','Kothrud','Hadapsar','Surprise me! 🎲'
+];
+
+function buildLocality() {
+  const c = document.getElementById('locality-pills');
+  c.innerHTML = '';
+  LOCALITIES.forEach(loc => {
+    const p = document.createElement('div');
+    p.className = 'pill'; p.textContent = loc;
+    p.addEventListener('click', () => {
+      p.classList.toggle('selected');
+      burst(p);
+      state.localities = Array.from(document.querySelectorAll('#locality-pills .pill.selected'))
+                              .map(x => x.textContent);
+    });
+    c.appendChild(p);
+  });
+}
+
+function backFromLocality() {
+  const type = state.planType;
+  show(type === 'Meetup' ? 's2b' : 's2a');
+}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 4 — VIBE & DETAILS
+═══════════════════════════════════════════════════ */
+const VIBES = [
+  {icon:'🌿',label:'Low-key & Cozy'},
+  {icon:'🔥',label:'Fun & Adventurous'},
+  {icon:'🌹',label:'Romantic & Dreamy'},
+  {icon:'😎',label:'Chill & Easy'},
+];
+
+function buildVibe() {
+  const c = document.getElementById('vibe-cards');
+  c.innerHTML = '';
+  VIBES.forEach(v => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.dataset.vibe = v.label;
+    div.innerHTML = `<div class="check">✓</div><span class="icon">${v.icon}</span><span class="label">${v.label}</span>`;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('#vibe-cards .opt').forEach(o => o.classList.remove('selected'));
+      div.classList.add('selected');
+      state.vibe = v.label;
+      burst(div);
+    });
+    c.appendChild(div);
+  });
+}
+
+function pickTime(el) {
+  document.querySelectorAll('.time-pills .pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  state.time = el.dataset.time;
+  burst(el);
+}
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION HELPER
+═══════════════════════════════════════════════════ */
+function goTo(screenNum) {
+  // screenNum is a logical step index
+  if(screenNum === 0) { show('s0'); return; }
+  if(screenNum === 1) { show('s1'); return; }
+  if(screenNum === 2) {
+    gatherActivities(); // no-op if coming from screen 1 forward
+    const type = state.planType;
+    if(!type) return;
+    if(type === 'Meetup') {
+      document.getElementById('flirty-2b').textContent = pick(FLIRTY.meetup);
+      show('s2b');
+    } else {
+      document.getElementById('flirty-2a').textContent = pick(
+        type==='Full Day' ? FLIRTY.fullday : FLIRTY.evening
+      );
+      show('s2a');
+    }
+    return;
+  }
+  if(screenNum === 3) {
+    gatherActivities();
+    document.getElementById('flirty-3').textContent = pick(FLIRTY.locality);
+    show('s3'); return;
+  }
+  if(screenNum === 4) {
+    state.localities = Array.from(document.querySelectorAll('#locality-pills .pill.selected'))
+                            .map(x => x.textContent);
+    const typed = document.getElementById('locality-text').value.trim();
+    if(typed && !state.localities.includes(typed)) state.localities.push(typed);
+    document.getElementById('flirty-4').textContent = pick(FLIRTY.vibe);
+    show('s4'); return;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   SUBMIT — Vercel serverless → Resend
+   (config: unchanged — env vars in Vercel dashboard)
+═══════════════════════════════════════════════════ */
+async function submitPlan() {
+  state.note = document.getElementById('special-note').value.trim();
+
+  // Show loading
+  show('s5');
+
+  const payload = {
+    day:          state.day || '—',
+    plan_type:    state.planType || '—',
+    activities:   state.activities.join(', ') || '—',
+    localities:   state.localities.join(', ') || '—',
+    vibe:         state.vibe || '—',
+    time:         state.time || '—',
+    note:         state.note || '—',
+  };
+
+  try {
+    await fetch('/api/send-email', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+  } catch(e) {
+    // Fail silently — she still sees done screen
+  }
+
+  // Advance to done
+  setTimeout(() => {
+    buildSummary(payload);
+    show('s6');
+    launchConfetti();
+  }, 1400);
+}
+
+function buildSummary(p) {
+  const box = document.getElementById('done-summary');
+  const rows = [
+    ['📅 Day', p.day],
+    ['🌟 Plan', p.plan_type],
+    ['🎯 Activities', p.activities],
+    ['📍 Locality', p.localities],
+    ['✨ Vibe', p.vibe],
+    ['🕐 Time', p.time],
+    ...(p.note && p.note !== '—' ? [['💬 Note', p.note]] : []),
+  ];
+  box.innerHTML = rows.map(([l,v]) =>
+    `<div class="summary-row"><span class="summary-label">${l}</span><span class="summary-val">${v}</span></div>`
+  ).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   CONFETTI
+═══════════════════════════════════════════════════ */
+function launchConfetti() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;z-index:500;pointer-events:none;';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const COLS = ['#c9607a','#e8a0bf','#d4a853','#fff','#ffd6e7'];
+  const pieces = Array.from({length:90}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height - canvas.height,
+    r: Math.random()*5+3, d: Math.random()*80+10,
+    color: COLS[Math.floor(Math.random()*COLS.length)],
+    tilt: 0, ta: 0, ts: Math.random()*0.1+0.04,
+  }));
+  let angle=0, f=0;
+  const draw = () => {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    angle+=0.01; f++;
+    pieces.forEach(p => {
+      p.ta+=p.ts; p.y+=(Math.cos(angle+p.d)+1.5); p.x+=Math.sin(angle); p.tilt=Math.sin(p.ta)*12;
+      ctx.beginPath(); ctx.lineWidth=p.r/2; ctx.strokeStyle=p.color;
+      ctx.moveTo(p.x+p.tilt+p.r/4,p.y); ctx.lineTo(p.x+p.tilt,p.y+p.tilt+p.r/4); ctx.stroke();
+    });
+    if(f<200) requestAnimationFrame(draw);
+    else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.remove(); }
+  };
+  draw();
+}
+
+/* ═══════════════════════════════════════════════════
+   BURST ANIMATION (6 emoji particles from tap point)
+═══════════════════════════════════════════════════ */
+const BURST_EMOJIS = ['✨','💕','🌸','💖','⭐','🌟'];
+function burst(el) {
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width/2;
+  const cy = r.top + r.height/2;
+  for(let i=0;i<6;i++) {
+    const p = document.createElement('div');
+    p.className = 'burst-particle';
+    p.textContent = BURST_EMOJIS[i % BURST_EMOJIS.length];
+    const angle = (i/6)*Math.PI*2;
+    const dist = 50 + Math.random()*30;
+    p.style.left = cx+'px'; p.style.top = cy+'px';
+    p.style.setProperty('--tx', `${Math.cos(angle)*dist}px`);
+    p.style.setProperty('--ty', `${Math.sin(angle)*dist}px`);
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 700);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   FLOATING PARTICLES — 22 emoji
+═══════════════════════════════════════════════════ */
+const PTCLS = ['❤️','💖','🌸','✨','💕','🌷','💗','🫶','⭐','🌺','💫','🌟'];
+function spawnParticle() {
+  const h = document.createElement('span');
+  h.className = 'particle';
+  h.textContent = PTCLS[Math.floor(Math.random()*PTCLS.length)];
+  h.style.left = `${Math.random()*93}vw`;
+  const d = 7+Math.random()*7;
+  h.style.animationDuration = `${d}s`;
+  h.style.animationDelay = `${Math.random()*2}s`;
+  document.getElementById('particles').appendChild(h);
+  setTimeout(() => h.remove(), (d+2)*1000);
+}
+// Spawn 22 over ~20s then maintain
+for(let i=0;i<22;i++) setTimeout(spawnParticle, i*900);
+setInterval(spawnParticle, 2200);
+
+/* ═══════════════════════════════════════════════════
+   MOOD BAR — cycling text
+═══════════════════════════════════════════════════ */
+const MOOD_TEXTS = [
+  'Play Out Mood 🌸',
+  'Something is in the air ✨',
+  'Weekend energy loading...',
+  'Good vibes only 🌟',
+  'Adventure awaits 🌈',
+  'This is gonna be fun 💫',
+  'Plans > no plans 🎯',
+  'Make some memories 🌺',
+];
+let moodIdx = 0;
+const moodEl = document.getElementById('mood-text');
+function cycleMood() {
+  moodEl.style.opacity = '0';
+  setTimeout(() => {
+    moodIdx = (moodIdx+1) % MOOD_TEXTS.length;
+    moodEl.textContent = MOOD_TEXTS[moodIdx];
+    moodEl.style.opacity = '1';
+  }, 600);
+}
+setInterval(cycleMood, 4000);
+
+/* ═══════════════════════════════════════════════════
+   MUSIC
+═══════════════════════════════════════════════════ */
+const bgMusic = document.getElementById('bgMusic');
+const musicBtn = document.getElementById('music-btn');
+let playing = false;
+
+function tryPlay() {
+  bgMusic.play().then(() => {
+    playing = true;
+    musicBtn.textContent = '🎵';
+    musicBtn.classList.add('playing');
+  }).catch(() => {});
+}
+
+// Try on load
+window.addEventListener('load', tryPlay);
+
+// Try on first interaction
+document.addEventListener('click', tryPlay);
+
+musicBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if(playing) {
+    bgMusic.pause();
+    playing = false;
+    musicBtn.textContent = '🔇';
+    musicBtn.classList.remove('playing');
+  } else {
+    tryPlay();
+  }
+});
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+initDots();
+buildActivities();
+buildLocality();
+buildVibe();
+show('s0');
+</script>
 </body>
 </html>

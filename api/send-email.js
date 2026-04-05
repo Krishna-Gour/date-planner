@@ -17,10 +17,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { day, plan_type, mood, activities, locality } = req.body;
+  const { day, plan_type, activities, localities, vibe, time, note } = req.body;
 
   // Basic validation
-  if (!day || !plan_type || !activities || !locality) {
+  if (!day || !plan_type) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
@@ -29,7 +29,6 @@ export default async function handler(req, res) {
 
   if (!apiKey || !toEmail) {
     console.error('[DatePlan] Missing environment variables');
-    // Return success to client anyway — don't expose config errors
     return res.status(200).json({ ok: true });
   }
 
@@ -43,18 +42,21 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: 'Date Planner <onboarding@resend.dev>',
         to: [toEmail],
-        subject: `🗓️ Date Plan — ${day} (${plan_type})`,
+        subject: `New Date Plan — ${day} • ${plan_type}`,
         html: `
-          <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px;background:#fff8f8;border-radius:12px;">
-            <h2 style="color:#4a0e1f;">New Date Preference 💌</h2>
-            <table style="width:100%;border-collapse:collapse;margin-top:16px;">
-              <tr><td style="padding:8px 0;color:#888;width:120px;">📅 Day</td><td style="font-weight:600;">${day}</td></tr>
-              <tr><td style="padding:8px 0;color:#888;">🌟 Plan Type</td><td style="font-weight:600;">${plan_type}</td></tr>
-              <tr><td style="padding:8px 0;color:#888;">😌 Mood</td><td style="font-weight:600;">${mood || 'Not selected'}</td></tr>
-              <tr><td style="padding:8px 0;color:#888;">🎯 Activities</td><td style="font-weight:600;">${activities}</td></tr>
-              <tr><td style="padding:8px 0;color:#888;">📍 Locality</td><td style="font-weight:600;">${locality}</td></tr>
+          <div style="font-family:sans-serif;max-width:500px;margin:auto;padding:28px;background:#fff8f4;border-radius:14px;">
+            <h2 style="color:#c9607a;font-family:Georgia,serif;margin-bottom:4px;">NEW DATE PLAN REQUEST</h2>
+            <p style="color:#888;font-size:13px;margin-bottom:20px;">Someone just set their vibe 🌸</p>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="padding:8px 0;color:#999;width:110px;font-size:13px;">📅 Day</td><td style="font-weight:600;color:#2a1a20;">${day}</td></tr>
+              <tr><td style="padding:8px 0;color:#999;font-size:13px;">🌟 Type</td><td style="font-weight:600;color:#2a1a20;">${plan_type}</td></tr>
+              <tr><td style="padding:8px 0;color:#999;font-size:13px;">🎯 Out Items</td><td style="font-weight:600;color:#2a1a20;">${activities || '—'}</td></tr>
+              <tr><td style="padding:8px 0;color:#999;font-size:13px;">📍 Areas</td><td style="font-weight:600;color:#2a1a20;">${localities || '—'}</td></tr>
+              <tr><td style="padding:8px 0;color:#999;font-size:13px;">✨ Vibe</td><td style="font-weight:600;color:#2a1a20;">${vibe || '—'}</td></tr>
+              <tr><td style="padding:8px 0;color:#999;font-size:13px;">🕐 Time</td><td style="font-weight:600;color:#2a1a20;">${time || '—'}</td></tr>
+              ${note && note !== '—' ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">💬 Note</td><td style="font-weight:600;color:#2a1a20;">${note}</td></tr>` : ''}
             </table>
-            <p style="margin-top:24px;color:#4a0e1f;font-style:italic;">Go plan something awesome. 🚀</p>
+            <p style="margin-top:24px;color:#c9607a;font-style:italic;font-size:14px;">Go plan something wonderful. 🚀</p>
           </div>
         `,
       }),
@@ -65,11 +67,11 @@ export default async function handler(req, res) {
       console.error('[DatePlan] Resend error:', err);
     }
 
-    // Always return success to the client — never expose errors
     return res.status(200).json({ ok: true });
 
   } catch (err) {
     console.error('[DatePlan] Fetch error:', err);
-    return res.status(200).json({ ok: true }); // Fail silently to client
+    return res.status(200).json({ ok: true });
   }
+
 }
