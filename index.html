@@ -564,12 +564,7 @@ textarea:focus { border-color: var(--rose); }
     <div class="grid-2" id="vibe-cards"></div>
 
     <p class="note" style="margin-bottom:0.5rem;">Preferred meeting time?</p>
-    <div class="time-pills" id="time-pills">
-      <div class="pill" data-time="Morning (9–12)" onclick="pickTime(this)">Morning (9–12)</div>
-      <div class="pill" data-time="Afternoon (12–4)" onclick="pickTime(this)">Afternoon (12–4)</div>
-      <div class="pill" data-time="Evening (4–8)" onclick="pickTime(this)">Evening (4–8)</div>
-      <div class="pill" data-time="Night (8+)" onclick="pickTime(this)">Night (8+)</div>
-    </div>
+    <div class="time-pills" id="time-pills"></div>
 
     <textarea id="special-note" rows="3" placeholder="Any special note? e.g. she loves desserts, no spicy food..."></textarea>
 
@@ -893,6 +888,36 @@ function pickTime(el) {
   burst(el);
 }
 
+function buildTime() {
+  const c = document.getElementById('time-pills');
+  c.innerHTML = '';
+  
+  const allTimes = ['Morning (9–12)', 'Afternoon (12–4)', 'Evening (4–8)', 'Night (8+)'];
+  let allowed = allTimes;
+  
+  if (state.planType === 'Full Day') {
+    allowed = ['Morning (9–12)'];
+  } else if (state.planType === 'Evening Only') {
+    allowed = ['Evening (4–8)', 'Night (8+)'];
+  }
+
+  // Clear invalid selection if they went back and changed plan type
+  if (state.time && !allowed.includes(state.time)) {
+    state.time = null;
+  }
+
+  allowed.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'pill';
+    if (state.time === t) div.classList.add('selected');
+    div.dataset.time = t;
+    div.textContent = t;
+    div.addEventListener('click', () => pickTime(div));
+    c.appendChild(div);
+  });
+}
+
+
 /* ═══════════════════════════════════════════════════
    NAVIGATION HELPER
 ═══════════════════════════════════════════════════ */
@@ -927,6 +952,7 @@ function goTo(screenNum) {
     const typed = document.getElementById('locality-text').value.trim();
     if(typed && !state.localities.includes(typed)) state.localities.push(typed);
     document.getElementById('flirty-4').textContent = pick(FLIRTY.vibe);
+    buildTime();
     show('s4'); return;
   }
   if(screenNum === '4b') {
