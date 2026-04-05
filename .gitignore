@@ -1,0 +1,10 @@
+# Ignore the original downloaded file (keep only perfect.mp3)
+One Direction - Perfect (Official Video) - OneDirectionVEVO.mp3
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
