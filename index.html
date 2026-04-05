@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Hinge Date Plan ❤️</title>
+    <meta name="description" content="A cute little date planner, just for us.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Background image overlay -->
+    <div class="bg-overlay"></div>
+
+    <!-- Floating hearts -->
+    <div id="hearts-container" aria-hidden="true"></div>
+
+    <!-- Confetti canvas (success screen) -->
+    <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+    <!-- ── Music bar — fixed top ───────────────────────── -->
+    <div class="music-bar">
+        <button id="music-toggle" class="music-btn" aria-label="Play background music">
+            <span class="music-icon">🎵</span>
+            <span class="music-label">Play Out Mood</span>
+        </button>
+        <!-- One Direction - Perfect (YouTube embed) -->
+        <iframe id="yt-player"
+            src="https://www.youtube.com/embed/2Vv-BfVoq4g?enablejsapi=1&autoplay=0&controls=0&loop=1&playlist=2Vv-BfVoq4g"
+            frameborder="0"
+            allow="autoplay"
+            title="Background music"
+            style="width:0;height:0;border:0;position:absolute;opacity:0;pointer-events:none;">
+        </iframe>
+    </div>
+
+    <!-- ── Main card ───────────────────────────────────── -->
+    <main class="app-wrap">
+        <div class="glass-card" id="main-card">
+
+            <!-- Progress bar -->
+            <div class="progress-wrap" id="progress-wrap">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <p class="progress-label" id="progress-label"></p>
+
+            <!-- ── STEP 1: Welcome + Mood ────────────────── -->
+            <div class="step active" id="step-1">
+                <div class="step-emoji">🌹</div>
+                <h1 class="hero-title">Wanna take a break?</h1>
+                <p class="flirty-line">I know just the way to make your weekend something special.</p>
+                <div class="mood-row" id="mood-row">
+                    <span class="mood-label">What's your energy?</span>
+                    <div class="mood-chips">
+                        <button class="mood-chip" data-mood="Chill" onclick="pickMood(this)">😌 Chill</button>
+                        <button class="mood-chip" data-mood="Adventurous" onclick="pickMood(this)">🔥 Adventurous</button>
+                        <button class="mood-chip" data-mood="Romantic" onclick="pickMood(this)">🌹 Romantic</button>
+                    </div>
+                </div>
+                <button class="btn-primary" id="step1-yes" onclick="goTo(2)">Yes, please! ✨</button>
+            </div>
+
+            <!-- ── STEP 2: Day ─────────────────────────── -->
+            <div class="step" id="step-2">
+                <div class="step-emoji">🗓️</div>
+                <h2 class="step-title">Which day would you prefer?</h2>
+                <p class="flirty-line" id="flirty-2">Tell me when — and I'll make it worth your while.</p>
+                <div class="option-grid two-col">
+                    <label class="option-card">
+                        <input type="radio" name="day" value="Saturday" required>
+                        <div class="card-inner">
+                            <span class="card-icon">🌤️</span>
+                            <span class="card-label">Saturday</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" name="day" value="Sunday">
+                        <div class="card-inner">
+                            <span class="card-icon">🌸</span>
+                            <span class="card-label">Sunday</span>
+                        </div>
+                    </label>
+                </div>
+                <div class="nav-row">
+                    <button class="btn-back" onclick="goTo(1)">← Back</button>
+                    <button class="btn-primary" onclick="goTo(3)">Next →</button>
+                </div>
+            </div>
+
+            <!-- ── STEP 3: Plan Type ─────────────────── -->
+            <div class="step" id="step-3">
+                <div class="step-emoji">✨</div>
+                <h2 class="step-title">How much time do you have?</h2>
+                <p class="flirty-line" id="flirty-3">More time with you? Yes please.</p>
+                <div class="option-grid two-col">
+                    <label class="option-card">
+                        <input type="radio" name="plan_type" value="Full Day" required onchange="onPlanType('Full Day')">
+                        <div class="card-inner">
+                            <span class="card-icon">🌞</span>
+                            <span class="card-label">Full Day</span>
+                            <span class="card-sub">Let's go all out</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" name="plan_type" value="Meetup" onchange="onPlanType('Meetup')">
+                        <div class="card-inner">
+                            <span class="card-icon">☕</span>
+                            <span class="card-label">Quick Meetup</span>
+                            <span class="card-sub">Keep it cozy</span>
+                        </div>
+                    </label>
+                </div>
+                <div class="nav-row">
+                    <button class="btn-back" onclick="goTo(2)">← Back</button>
+                    <button class="btn-primary" onclick="goTo(4)">Next →</button>
+                </div>
+            </div>
+
+            <!-- ── STEP 4: Itinerary ─────────────────── -->
+            <div class="step" id="step-4">
+                <div class="step-emoji">🎯</div>
+                <h2 class="step-title" id="itinerary-title">What sounds fun to you?</h2>
+                <p class="flirty-line" id="flirty-4">Pick as many as you like — your wish is my command.</p>
+                <div class="option-grid one-col scrollable" id="itinerary-options">
+                    <!-- Dynamically filled -->
+                </div>
+                <button class="btn-surprise" id="surprise-btn" onclick="surpriseMe()">🎲 Surprise Me!</button>
+                <div class="nav-row">
+                    <button class="btn-back" onclick="goTo(3)">← Back</button>
+                    <button class="btn-primary" onclick="goTo(5)">Next →</button>
+                </div>
+            </div>
+
+            <!-- ── STEP 5: Locality ─────────────────── -->
+            <div class="step" id="step-5">
+                <div class="step-emoji">📍</div>
+                <h2 class="step-title">Which part of Pune works for you?</h2>
+                <p class="flirty-line" id="flirty-5">Last one! Just tell me where — I'll handle everything else.</p>
+                <div class="locality-grid" id="locality-options">
+                    <!-- Dynamically filled -->
+                </div>
+                <p class="or-text">— or type your own —</p>
+                <div class="input-wrap">
+                    <input type="text" id="locality-input" name="locality" placeholder="e.g. Koregaon Park, Camp..." autocomplete="off">
+                    <div class="input-line"></div>
+                </div>
+                <div class="nav-row">
+                    <button class="btn-back" onclick="goTo(4)">← Back</button>
+                    <button class="btn-primary" id="submit-btn" onclick="submitPlan()">Finalize! ❤️</button>
+                </div>
+            </div>
+
+        </div><!-- .glass-card -->
+    </main>
+
+    <!-- ── SUCCESS SCREEN ─────────────────────────────── -->
+    <div id="success-screen" class="success-overlay hidden">
+        <div class="glass-card success-card">
+            <div class="step-emoji">💌</div>
+            <h2 class="hero-title">Done!</h2>
+            <p class="flirty-line">I've got an idea of your vibe —<br>I'll come up with a plan soon!</p>
+            <p class="success-sub">See you soon ❤️</p>
+            <button class="btn-primary" onclick="location.reload()">Start Over</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
