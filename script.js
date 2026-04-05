@@ -314,25 +314,33 @@ function launchConfetti() {
 }
 
 // ─────────────────────────────────────────────────────────
-// MUSIC — "Perfect" by One Direction (YouTube)
+// MUSIC — "Perfect" by One Direction (perfect.mp3)
 // ─────────────────────────────────────────────────────────
-const musicBtn = document.getElementById('music-toggle');
+const audio     = document.getElementById('bg-audio');
+const musicBtn  = document.getElementById('music-toggle');
 const musicLabel = musicBtn.querySelector('.music-label');
 let musicPlaying = false;
 
 musicBtn.addEventListener('click', () => {
-  const iframe = document.getElementById('yt-player');
   if (!musicPlaying) {
-    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-    musicLabel.textContent = 'Playing Perfect... 🎵';
-    musicBtn.classList.add('playing');
+    audio.play()
+      .then(() => {
+        musicLabel.textContent = 'Playing Perfect... 🎵';
+        musicBtn.classList.add('playing');
+        musicPlaying = true;
+      })
+      .catch(() => {
+        // Browser blocked autoplay — button still pressed, try again on next click
+        musicLabel.textContent = 'Tap again to play 🎵';
+      });
   } else {
-    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+    audio.pause();
     musicLabel.textContent = 'Play Out Mood';
     musicBtn.classList.remove('playing');
+    musicPlaying = false;
   }
-  musicPlaying = !musicPlaying;
 });
+
 
 // ─────────────────────────────────────────────────────────
 // FLOATING HEARTS
