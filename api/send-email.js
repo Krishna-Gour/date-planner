@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { day, plan_type, activities, localities, vibe, time, note } = req.body;
+  const { name, day, plan_type, activities, localities, vibe, time, note } = req.body;
 
   // Basic validation
   if (!day || !plan_type) {
@@ -42,13 +42,14 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: 'Date Planner <onboarding@resend.dev>',
         to: [toEmail],
-        subject: `New Date Plan — ${day} • ${plan_type}`,
+        subject: `New Plan from ${name || 'Secret admirer'} — ${day}`,
         html: `
           <div style="font-family:sans-serif;max-width:500px;margin:auto;padding:28px;background:#fff8f4;border-radius:14px;">
             <h2 style="color:#c9607a;font-family:Georgia,serif;margin-bottom:4px;">NEW DATE PLAN REQUEST</h2>
             <p style="color:#888;font-size:13px;margin-bottom:20px;">Someone just set their vibe 🌸</p>
             <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="padding:8px 0;color:#999;width:110px;font-size:13px;">📅 Day</td><td style="font-weight:600;color:#2a1a20;">${day}</td></tr>
+              <tr><td style="padding:8px 0;color:#999;width:110px;font-size:13px;">💌 From</td><td style="font-weight:600;color:#2a1a20;">${name || 'Secret admirer'}</td></tr>
+              <tr><td style="padding:8px 0;color:#999;font-size:13px;">📅 Day</td><td style="font-weight:600;color:#2a1a20;">${day}</td></tr>
               <tr><td style="padding:8px 0;color:#999;font-size:13px;">🌟 Type</td><td style="font-weight:600;color:#2a1a20;">${plan_type}</td></tr>
               <tr><td style="padding:8px 0;color:#999;font-size:13px;">🎯 Out Items</td><td style="font-weight:600;color:#2a1a20;">${activities || '—'}</td></tr>
               <tr><td style="padding:8px 0;color:#999;font-size:13px;">📍 Areas</td><td style="font-weight:600;color:#2a1a20;">${localities || '—'}</td></tr>

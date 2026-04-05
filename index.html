@@ -447,7 +447,9 @@ textarea:focus { border-color: var(--rose); }
 <audio id="bgMusic" loop preload="auto">
   <source src="perfect.mp3" type="audio/mpeg">
 </audio>
-<button id="music-btn" aria-label="Toggle music">🎵</button>
+<button id="music-btn" aria-label="Toggle music">
+  <span id="music-icon" style="font-size: 1.1rem; line-height: 1;">▶</span>
+</button>
 
 <!-- ══════════════════════════════════════════════
      APP
@@ -464,7 +466,16 @@ textarea:focus { border-color: var(--rose); }
       <span class="heart-pulse" style="font-size:2.2rem;">🌹</span>
     </p>
     <h1 class="hero" style="text-align:center;">Wanna take a break?</h1>
-    <p class="flirty" style="text-align:center;margin-bottom:1.6rem;">Let's plan something worth remembering</p>
+    <p class="flirty" style="text-align:center;margin-bottom:2rem;">I know just the way to make your weekend something special.</p>
+    <div style="text-align:center;">
+      <button class="btn-primary" style="width:auto; padding: 0.9rem 2.5rem;" onclick="goTo('0b')">Yes, please! ✨</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 0B: Pick Day ────────────────────── -->
+  <div class="screen" id="s0b">
+    <h2 class="screen-title" style="text-align:center;">Which day would you prefer?</h2>
+    <p class="flirty" style="text-align:center;margin-bottom:1.6rem;">Tell me when, and I'll make it worth your while. 😏</p>
     <div class="grid-2" id="day-cards">
       <div class="day-card" data-day="Saturday" onclick="pickDay(this)">
         <span class="day-icon">🌤️</span>
@@ -562,6 +573,11 @@ textarea:focus { border-color: var(--rose); }
 
     <textarea id="special-note" rows="3" placeholder="Any special note? e.g. she loves desserts, no spicy food..."></textarea>
 
+    <div style="margin-top: 1.5rem; text-align:center;">
+      <p class="note" style="margin-bottom:0.3rem;">Just to be sure it's you... 😉</p>
+      <input class="text-input" id="guest-name" type="text" placeholder="Drop your initials / name" style="width: 80%;">
+    </div>
+
     <div class="nav-row">
       <button class="btn-back" onclick="goTo(3)">← Back</button>
       <button class="btn-next" id="s4-next" onclick="submitPlan()">Send it over →</button>
@@ -597,6 +613,7 @@ textarea:focus { border-color: var(--rose); }
    STATE
 ═══════════════════════════════════════════════════ */
 const state = {
+  name: '',
   day: null,
   planType: null,
   activities: [],
@@ -613,9 +630,9 @@ let currentScreen = 0;
 /* ═══════════════════════════════════════════════════
    SCREEN NAMES FOR TRACKING
 ═══════════════════════════════════════════════════ */
-const SCREEN_IDS = ['s0','s1','s2a','s2b','s3','s4','s5','s6'];
+const SCREEN_IDS = ['s0','s0b','s1','s2a','s2b','s3','s4','s5','s6'];
 // Dot-mapped screens (s2a and s2b share same dot index 2)
-const SCREEN_DOT_MAP = { s0:0, s1:1, s2a:2, s2b:2, s3:3, s4:4, s5:4, s6:5 };
+const SCREEN_DOT_MAP = { s0:0, s0b:0, s1:1, s2a:2, s2b:2, s3:3, s4:4, s5:4, s6:5 };
 
 /* ═══════════════════════════════════════════════════
    INIT DOTS
@@ -869,6 +886,7 @@ function pickTime(el) {
 function goTo(screenNum) {
   // screenNum is a logical step index
   if(screenNum === 0) { show('s0'); return; }
+  if(screenNum === '0b') { show('s0b'); return; }
   if(screenNum === 1) { show('s1'); return; }
   if(screenNum === 2) {
     gatherActivities(); // no-op if coming from screen 1 forward
@@ -906,11 +924,13 @@ function goTo(screenNum) {
 ═══════════════════════════════════════════════════ */
 async function submitPlan() {
   state.note = document.getElementById('special-note').value.trim();
+  state.name = document.getElementById('guest-name').value.trim() || 'Secret admirer';
 
   // Show loading
   show('s5');
 
   const payload = {
+    name:         state.name,
     day:          state.day || '—',
     plan_type:    state.planType || '—',
     activities:   state.activities.join(', ') || '—',
@@ -1056,12 +1076,13 @@ setInterval(cycleMood, 4000);
 ═══════════════════════════════════════════════════ */
 const bgMusic = document.getElementById('bgMusic');
 const musicBtn = document.getElementById('music-btn');
+const musicIcon = document.getElementById('music-icon');
 let playing = false;
 
 function tryPlay() {
   bgMusic.play().then(() => {
     playing = true;
-    musicBtn.textContent = '🎵';
+    musicIcon.textContent = '⏸'; // Pause symbol
     musicBtn.classList.add('playing');
   }).catch(() => {});
 }
@@ -1070,14 +1091,14 @@ function tryPlay() {
 window.addEventListener('load', tryPlay);
 
 // Try on first interaction
-document.addEventListener('click', tryPlay);
+document.addEventListener('click', tryPlay, { once: true });
 
 musicBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   if(playing) {
     bgMusic.pause();
     playing = false;
-    musicBtn.textContent = '🔇';
+    musicIcon.textContent = '▶'; // Play symbol
     musicBtn.classList.remove('playing');
   } else {
     tryPlay();
