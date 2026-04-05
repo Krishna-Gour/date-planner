@@ -563,7 +563,7 @@ textarea:focus { border-color: var(--rose); }
     <p class="note" style="margin-bottom:0.5rem;">What's the vibe?</p>
     <div class="grid-2" id="vibe-cards"></div>
 
-    <p class="note" style="margin-bottom:0.5rem;">Time preference?</p>
+    <p class="note" style="margin-bottom:0.5rem;">Preferred meeting time?</p>
     <div class="time-pills" id="time-pills">
       <div class="pill" data-time="Morning (9–12)" onclick="pickTime(this)">Morning (9–12)</div>
       <div class="pill" data-time="Afternoon (12–4)" onclick="pickTime(this)">Afternoon (12–4)</div>
@@ -580,7 +580,20 @@ textarea:focus { border-color: var(--rose); }
 
     <div class="nav-row">
       <button class="btn-back" onclick="goTo(3)">← Back</button>
-      <button class="btn-next" id="s4-next" onclick="submitPlan()">Send it over →</button>
+      <button class="btn-next" id="s4-next" onclick="goTo('4b')">Review Plan →</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 4B: Review ────────────────────── -->
+  <div class="screen" id="s4b">
+    <h2 class="screen-title" style="text-align:center;">Here's what we're looking at...</h2>
+    <p class="flirty" style="text-align:center;margin-bottom:1.2rem;">Just making sure I got everything right.</p>
+
+    <div class="summary-box" id="review-summary"></div>
+
+    <div class="nav-row" style="margin-top:2rem;">
+      <button class="btn-back" onclick="goTo(4)">← Wait, let me edit</button>
+      <button class="btn-next" onclick="submitPlan()">Looks perfect, send it! 💌</button>
     </div>
   </div>
 
@@ -630,9 +643,9 @@ let currentScreen = 0;
 /* ═══════════════════════════════════════════════════
    SCREEN NAMES FOR TRACKING
 ═══════════════════════════════════════════════════ */
-const SCREEN_IDS = ['s0','s0b','s1','s2a','s2b','s3','s4','s5','s6'];
+const SCREEN_IDS = ['s0','s0b','s1','s2a','s2b','s3','s4','s4b','s5','s6'];
 // Dot-mapped screens (s2a and s2b share same dot index 2)
-const SCREEN_DOT_MAP = { s0:0, s0b:0, s1:1, s2a:2, s2b:2, s3:3, s4:4, s5:4, s6:5 };
+const SCREEN_DOT_MAP = { s0:0, s0b:0, s1:1, s2a:2, s2b:2, s3:3, s4:4, s4b:4, s5:4, s6:5 };
 
 /* ═══════════════════════════════════════════════════
    INIT DOTS
@@ -916,6 +929,43 @@ function goTo(screenNum) {
     document.getElementById('flirty-4').textContent = pick(FLIRTY.vibe);
     show('s4'); return;
   }
+  if(screenNum === '4b') {
+    state.note = document.getElementById('special-note').value.trim();
+    state.name = document.getElementById('guest-name').value.trim() || 'Secret admirer';
+    updateSummaries();
+    show('s4b'); return;
+  }
+}
+
+function updateSummaries() {
+  const p = {
+    name:         state.name,
+    day:          state.day || '—',
+    plan_type:    state.planType || '—',
+    activities:   state.activities.join(', ') || '—',
+    localities:   state.localities.join(', ') || '—',
+    vibe:         state.vibe || '—',
+    time:         state.time || '—',
+    note:         state.note || '—',
+  };
+  
+  const rows = [
+    ['📅 Day', p.day],
+    ['🌟 Plan', p.plan_type],
+    ['🎯 Activities', p.activities],
+    ['📍 Locality', p.localities],
+    ['✨ Vibe', p.vibe],
+    ['🕐 Time', p.time],
+    ...(p.note && p.note !== '—' ? [['💬 Note', p.note]] : []),
+  ];
+  const html = rows.map(([l,v]) =>
+    `<div class="summary-row"><span class="summary-label">${l}</span><span class="summary-val">${v}</span></div>`
+  ).join('');
+
+  const reviewBox = document.getElementById('review-summary');
+  if(reviewBox) reviewBox.innerHTML = html;
+  const doneBox = document.getElementById('done-summary');
+  if(doneBox) doneBox.innerHTML = html;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -923,9 +973,6 @@ function goTo(screenNum) {
    (config: unchanged — env vars in Vercel dashboard)
 ═══════════════════════════════════════════════════ */
 async function submitPlan() {
-  state.note = document.getElementById('special-note').value.trim();
-  state.name = document.getElementById('guest-name').value.trim() || 'Secret admirer';
-
   // Show loading
   show('s5');
 
@@ -952,26 +999,9 @@ async function submitPlan() {
 
   // Advance to done
   setTimeout(() => {
-    buildSummary(payload);
     show('s6');
     launchConfetti();
   }, 1400);
-}
-
-function buildSummary(p) {
-  const box = document.getElementById('done-summary');
-  const rows = [
-    ['📅 Day', p.day],
-    ['🌟 Plan', p.plan_type],
-    ['🎯 Activities', p.activities],
-    ['📍 Locality', p.localities],
-    ['✨ Vibe', p.vibe],
-    ['🕐 Time', p.time],
-    ...(p.note && p.note !== '—' ? [['💬 Note', p.note]] : []),
-  ];
-  box.innerHTML = rows.map(([l,v]) =>
-    `<div class="summary-row"><span class="summary-label">${l}</span><span class="summary-val">${v}</span></div>`
-  ).join('');
 }
 
 /* ═══════════════════════════════════════════════════
