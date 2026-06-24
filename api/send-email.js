@@ -3,12 +3,12 @@
 // 
 // Required Vercel Environment Variables (set in Vercel Dashboard):
 //   RESEND_API_KEY   — from resend.com (free, 100 emails/day)
-//   TO_EMAIL         — er.krishnagaur01@gmail.com
+//   TO_EMAIL         — pandaprime.ops@gmail.com
 //
 // How to set them:
 //   1. Go to vercel.com → your project → Settings → Environment Variables
 //   2. Add RESEND_API_KEY = (your key from resend.com)
-//   3. Add TO_EMAIL = er.krishnagaur01@gmail.com
+//   3. Add TO_EMAIL = pandaprime.ops@gmail.com
 //   4. Redeploy. Done.
 
 export default async function handler(req, res) {
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { name, day, plan_type, activities, localities, vibe, time, note } = req.body;
+  const { name, contact, day, plan_type, activities, localities, vibe, time, note } = req.body;
 
   // Basic validation
   if (!day || !plan_type) {
@@ -51,11 +51,12 @@ export default async function handler(req, res) {
               <tr><td style="padding:8px 0;color:#999;width:110px;font-size:13px;">💌 From</td><td style="font-weight:600;color:#2a1a20;">${name || 'Secret admirer'}</td></tr>
               <tr><td style="padding:8px 0;color:#999;font-size:13px;">📅 Day</td><td style="font-weight:600;color:#2a1a20;">${day}</td></tr>
               <tr><td style="padding:8px 0;color:#999;font-size:13px;">🌟 Type</td><td style="font-weight:600;color:#2a1a20;">${plan_type}</td></tr>
-              <tr><td style="padding:8px 0;color:#999;font-size:13px;">🎯 Out Items</td><td style="font-weight:600;color:#2a1a20;">${activities || '—'}</td></tr>
+              <tr><td style="padding:8px 0;color:#999;font-size:13px;">🕐 Time</td><td style="font-weight:600;color:#2a1a20;">${time || '—'}</td></tr>
+              <tr><td style="padding:8px 0;color:#999;font-size:13px;">🎯 Activities</td><td style="font-weight:600;color:#2a1a20;">${activities || '—'}</td></tr>
               <tr><td style="padding:8px 0;color:#999;font-size:13px;">📍 Areas</td><td style="font-weight:600;color:#2a1a20;">${localities || '—'}</td></tr>
               <tr><td style="padding:8px 0;color:#999;font-size:13px;">✨ Vibe</td><td style="font-weight:600;color:#2a1a20;">${vibe || '—'}</td></tr>
-              <tr><td style="padding:8px 0;color:#999;font-size:13px;">🕐 Time</td><td style="font-weight:600;color:#2a1a20;">${time || '—'}</td></tr>
               ${note && note !== '—' ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">💬 Note</td><td style="font-weight:600;color:#2a1a20;">${note}</td></tr>` : ''}
+              ${contact ? `<tr><td style="padding:8px 0;color:#999;font-size:13px;">📲 Contact</td><td style="font-weight:600;color:#2a1a20;">${contact}</td></tr>` : ''}
             </table>
             <p style="margin-top:24px;color:#c9607a;font-style:italic;font-size:14px;">Go plan something wonderful. 🚀</p>
           </div>
