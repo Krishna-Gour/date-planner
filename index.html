@@ -651,15 +651,19 @@ textarea:focus { border-color: var(--rose); }
 /* ═══════════════════════════════════════════════════
    MUSIC TOGGLE
 ═══════════════════════════════════════════════════ */
+#music-controls {
+  position: fixed; bottom: 1.4rem; right: 1.2rem;
+  display: flex; flex-direction: row; align-items: center;
+  gap: 0.8rem; z-index: 300;
+}
 #music-btn {
-  position:fixed; bottom:1.4rem; right:1.2rem;
   width:48px; height:48px; border-radius:50%;
   background:#fff;
   border:2px solid var(--deep-rose);
   box-shadow: 0 4px 16px rgba(0,0,0,0.25);
   display:flex; align-items:center; justify-content:center;
   font-size:1.3rem;
-  cursor:pointer; z-index:300;
+  cursor:pointer;
   transition: transform 0.2s;
 }
 #music-btn:active { transform:scale(0.9); }
@@ -668,6 +672,37 @@ textarea:focus { border-color: var(--rose); }
   0%   { box-shadow: 0 0 0 0 rgba(201,96,122,0.5); }
   70%  { box-shadow: 0 0 0 10px rgba(201,96,122,0); }
   100% { box-shadow: 0 0 0 0 rgba(201,96,122,0); }
+}
+/* version toggle pill */
+#version-toggle {
+  display: flex;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(201,96,122,0.45);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+#version-toggle button {
+  padding: 0.3rem 0.65rem;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s;
+  white-space: nowrap;
+}
+#version-toggle button.active {
+  background: var(--deep-rose);
+  color: #fff;
+  border-radius: 18px;
+}
+#version-toggle button:hover:not(.active) {
+  color: #fff;
+  background: rgba(201,96,122,0.2);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -716,9 +751,18 @@ textarea:focus { border-color: var(--rose); }
 <audio id="bgMusic" loop preload="auto">
   <source src="perfect.mp3" type="audio/mpeg">
 </audio>
-<button id="music-btn" aria-label="Toggle music">
-  <span id="music-icon" style="font-size:1.1rem;line-height:1;">▶</span>
-</button>
+<audio id="bgMusicCover" loop preload="auto">
+  <source src="perfect-my-cover.mp3" type="audio/mpeg">
+</audio>
+<div id="music-controls">
+  <div id="version-toggle" aria-label="Choose music version">
+    <button id="btn-original" class="active" title="One Direction — Perfect (Original)">🎵 Original</button>
+    <button id="btn-cover" title="Your cover of Perfect">🎤 My Cover</button>
+  </div>
+  <button id="music-btn" aria-label="Toggle music">
+    <span id="music-icon" style="font-size:1.1rem;line-height:1;">▶</span>
+  </button>
+</div>
 
 <!-- ── CALENDAR MODAL ─────────────────────── -->
 <div id="cal-modal" role="dialog" aria-label="Pick a date">
@@ -1655,18 +1699,57 @@ setInterval(cycleMood, 4000);
 /* ═══════════════════════════════════════════════════
    MUSIC
 ═══════════════════════════════════════════════════ */
-const bgMusic  = document.getElementById('bgMusic');
-const musicBtn = document.getElementById('music-btn');
-const musicIcon = document.getElementById('music-icon');
-let playing = false;
+const bgMusic      = document.getElementById('bgMusic');
+const bgMusicCover = document.getElementById('bgMusicCover');
+const musicBtn     = document.getElementById('music-btn');
+const musicIcon    = document.getElementById('music-icon');
+const btnOriginal  = document.getElementById('btn-original');
+const btnCover     = document.getElementById('btn-cover');
+let playing  = false;
+let activeTrack = bgMusic; // starts on original
 
 function tryPlay() {
-  bgMusic.play().then(() => {
+  activeTrack.play().then(() => {
     playing = true;
     musicIcon.textContent = '⏸';
     musicBtn.classList.add('playing');
   }).catch(() => {});
 }
+
+function switchVersion(toTrack, activeBtn, inactiveBtn) {
+  const wasPlaying = playing;
+  const currentTime = activeTrack.currentTime;
+  // pause current
+  activeTrack.pause();
+  activeTrack = toTrack;
+  // update pill UI
+  activeBtn.classList.add('active');
+  inactiveBtn.classList.remove('active');
+  if (wasPlaying) {
+    // try to resume at same relative position
+    activeTrack.currentTime = Math.min(currentTime, activeTrack.duration || 0);
+    activeTrack.play().then(() => {
+      musicIcon.textContent = '⏸';
+      musicBtn.classList.add('playing');
+    }).catch(() => {});
+  } else {
+    playing = false;
+    musicIcon.textContent = '▶';
+    musicBtn.classList.remove('playing');
+  }
+}
+
+btnOriginal.addEventListener('click', e => {
+  e.stopPropagation();
+  if (activeTrack === bgMusic) return;
+  switchVersion(bgMusic, btnOriginal, btnCover);
+});
+
+btnCover.addEventListener('click', e => {
+  e.stopPropagation();
+  if (activeTrack === bgMusicCover) return;
+  switchVersion(bgMusicCover, btnCover, btnOriginal);
+});
 
 window.addEventListener('load', tryPlay);
 document.addEventListener('click', tryPlay, { once: true });
@@ -1674,7 +1757,7 @@ document.addEventListener('click', tryPlay, { once: true });
 musicBtn.addEventListener('click', e => {
   e.stopPropagation();
   if(playing) {
-    bgMusic.pause(); playing = false;
+    activeTrack.pause(); playing = false;
     musicIcon.textContent = '▶';
     musicBtn.classList.remove('playing');
   } else {
